@@ -215,7 +215,7 @@ async function writeSettings(
   if (!commitAccountSelection && readIncompleteLegacyTeamConnections(raw).length > 0) {
     delete persisted.providerFamilyConnectionSelections;
   }
-  // ZCode-JP：setting.json は公式版と共有するため、"ja-JP" はそのまま書かない（jaLocaleSettings.ts を参照）。
+  // setting.json は旧版とも共有するため、"ja-JP" はそのまま書かない（jaLocaleSettings.ts を参照）。
   await atomicWriteText(settingsFile, JSON.stringify(encodeJaLocaleForDisk(persisted), null, 2), {
     beforeRename: () => {
       if (!shouldCommit()) {

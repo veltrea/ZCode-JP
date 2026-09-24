@@ -38,7 +38,7 @@ test("decode: 目印があり en-US のままなら ja-JP に戻す", () => {
   assert.deepEqual(decoded, { locale: "ja-JP", localePreference: "system" });
 });
 
-test("decode: 公式版で別の言語に変えられていたら、その選択を優先する", () => {
+test("decode: 旧版で別の言語に変えられていたら、その選択を優先する", () => {
   const decoded = decodeJaLocaleFromDisk({
     locale: "zh-CN",
     localePreference: "zh-CN",

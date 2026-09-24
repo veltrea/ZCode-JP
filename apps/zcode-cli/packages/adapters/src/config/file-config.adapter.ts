@@ -488,7 +488,7 @@ async function readJsonConfigFileOrEmpty(filePath: string): Promise<Record<strin
 
 function patchUiLocale(parsed: Record<string, unknown>, locale: UiLocale): Record<string, unknown> {
   const currentUi = isRecord(parsed.ui) ? parsed.ui : {};
-  // ZCode-JP：この設定ファイルは公式版の CLI と共有する。公式版は ui.locale に "ja-JP" があると
+  // この設定ファイルはja-JP に対応していない旧版の CLI とも共有する。旧版は ui.locale に "ja-JP" があると
   // 設定ファイル全体を読めなくなるため、"en-US" を書き、日本語の選択は別の項目に残す。
   const { [UI_JA_LOCALE_KEY]: _previousJaLocale, ...uiWithoutJaLocale } = currentUi;
   const ui =

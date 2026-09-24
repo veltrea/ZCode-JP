@@ -1,10 +1,10 @@
 /**
- * ZCode-JP：日本語の選択を setting.json に保存するときの変換。
+ * 日本語の選択を setting.json に保存するときの変換。
  *
- * setting.json（~/.zcode/v2/setting.json）は公式版の ZCode と共有される。
- * 公式版は locale / localePreference に "ja-JP" があると設定全体を不正とみなし、
- * すべて既定値で読み直してしまう。そのため、ファイルには公式版も読める "en-US" を書き、
- * 日本語を選んだことは公式版が無視する別の項目（JA_LOCALE_SETTINGS_KEY）に記録する。
+ * setting.json（~/.zcode/v2/setting.json）は、ja-JP に対応していない旧版の ZCode とも共有される。
+ * 旧版は locale / localePreference に "ja-JP" があると設定全体を不正とみなし、
+ * すべて既定値で読み直してしまう。そのため、ファイルには旧版も読める "en-US" を書き、
+ * 日本語を選んだことは旧版が無視する別の項目（JA_LOCALE_SETTINGS_KEY）に記録する。
  */
 export const JA_LOCALE_SETTINGS_KEY = "zcodeJpLocale";
 
@@ -39,7 +39,7 @@ export function encodeJaLocaleForDisk<T extends object>(settings: T): T {
 
 /**
  * 読み込んだ直後、検査の前に呼ぶ。目印の項目があり、値がまだ "en-US" のままなら "ja-JP" に戻す。
- * 公式版で別の言語に切り替えられていた場合は、その選択を優先して日本語に戻さない。
+ * 旧版で別の言語に切り替えられていた場合は、その選択を優先して日本語に戻さない。
  */
 export function decodeJaLocaleFromDisk(raw: unknown): unknown {
   if (!isPlainObject(raw)) return raw;
