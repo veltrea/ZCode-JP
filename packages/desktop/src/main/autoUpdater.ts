@@ -346,9 +346,10 @@ function notifyForceAutoUpdate(state: ForceAutoUpdateState) {
 }
 
 function getForceAutoUpdateNoUpdateMessage(): string {
-  return menuLocale === "zh-CN"
-    ? "未找到可安装更新，请使用手动升级。"
-    : "No installable update was found. Use manual update instead.";
+  if (menuLocale === "zh-CN") return "未找到可安装更新，请使用手动升级。";
+  if (menuLocale === "ja-JP")
+    return "インストール可能な更新が見つかりませんでした。手動更新を使ってください。";
+  return "No installable update was found. Use manual update instead.";
 }
 
 function normalizeProgressPercent(progress: unknown): string | undefined {
@@ -626,7 +627,7 @@ function normalizeLocalizedReleaseNotes(
     return undefined;
   }
 
-  for (const locale of ["zh-CN", "en-US"] as const) {
+  for (const locale of ["zh-CN", "en-US", "ja-JP"] as const) {
     const entry = releaseNotesByLocale[locale];
     if (!entry) {
       continue;
@@ -781,6 +782,7 @@ function pickFallbackReleaseNotesMarkdown(
     localized?.[menuLocale]?.markdown ??
     localized?.["zh-CN"]?.markdown ??
     localized?.["en-US"]?.markdown ??
+    localized?.["ja-JP"]?.markdown ??
     null
   );
 }

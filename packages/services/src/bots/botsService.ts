@@ -185,27 +185,35 @@ function parseBotModelOptionValue(value: string): ModelSelection | undefined {
 const BOT_REPLY_GRANULARITY_OPTIONS = [
   {
     id: "assistant_changes",
-    label: { "zh-CN": "标准回复", "en-US": "Standard reply" },
-    aliases: ["assistant", "assistant_changes", "normal", "default", "standard", "标准回复"],
+    label: { "zh-CN": "标准回复", "en-US": "Standard reply", "ja-JP": "標準の返信" },
+    aliases: [
+      "assistant",
+      "assistant_changes",
+      "normal",
+      "default",
+      "standard",
+      "标准回复",
+      "標準の返信",
+    ],
   },
   {
     id: "assistant_toolcalls_changes",
-    label: { "zh-CN": "完整回复", "en-US": "Full reply" },
-    aliases: ["full", "tool", "toolcalls", "assistant_toolcalls_changes", "完整回复"],
+    label: { "zh-CN": "完整回复", "en-US": "Full reply", "ja-JP": "完全な返信" },
+    aliases: ["full", "tool", "toolcalls", "assistant_toolcalls_changes", "完整回复", "完全な返信"],
   },
   {
     id: "summary_changes",
-    label: { "zh-CN": "摘要回复", "en-US": "Summary reply" },
-    aliases: ["summary", "summary_changes", "latest", "摘要回复"],
+    label: { "zh-CN": "摘要回复", "en-US": "Summary reply", "ja-JP": "要約の返信" },
+    aliases: ["summary", "summary_changes", "latest", "摘要回复", "要約の返信"],
   },
   {
     id: "streaming_card",
-    label: { "zh-CN": "流式卡片", "en-US": "Streaming card" },
-    aliases: ["stream", "streaming", "streaming_card", "流式", "流式卡片"],
+    label: { "zh-CN": "流式卡片", "en-US": "Streaming card", "ja-JP": "ストリーミングカード" },
+    aliases: ["stream", "streaming", "streaming_card", "流式", "流式卡片", "ストリーミングカード"],
   },
 ] as const satisfies ReadonlyArray<{
   id: BotReplyGranularity;
-  label: Record<"zh-CN" | "en-US", string>;
+  label: Record<"zh-CN" | "en-US" | "ja-JP", string>;
   aliases: readonly string[];
 }>;
 
@@ -404,7 +412,7 @@ function normalizeText(value: string): string {
 }
 
 function getReplyGranularityOptions(locale: Locale | undefined, provider?: BotProvider) {
-  const messageLocale = locale === "en-US" ? "en-US" : "zh-CN";
+  const messageLocale = locale === "en-US" || locale === "ja-JP" ? locale : "zh-CN";
   const supportedIds = provider ? new Set(getSupportedBotReplyGranularities(provider)) : null;
   return BOT_REPLY_GRANULARITY_OPTIONS.filter(
     (option) => !supportedIds || supportedIds.has(option.id),
@@ -430,7 +438,8 @@ function resolveReplyGranularityByValue(
     (item) =>
       (item.aliases as readonly string[]).includes(normalized) ||
       normalizeText(item.label["zh-CN"]) === normalized ||
-      normalizeText(item.label["en-US"]) === normalized,
+      normalizeText(item.label["en-US"]) === normalized ||
+      normalizeText(item.label["ja-JP"]) === normalized,
   );
   return option ? (options.find((item) => item.id === option.id) ?? null) : null;
 }
@@ -562,6 +571,20 @@ function formatBotPermissionOptionLabel(option: ZCodePermissionOption, locale?: 
         return option.name;
     }
   }
+  if (locale === "ja-JP") {
+    switch (displayKind) {
+      case "allowOnce":
+        return "許可";
+      case "allowAlways":
+        return "常に許可";
+      case "rejectOnce":
+        return "拒否";
+      case "rejectAlways":
+        return "常に拒否";
+      case "custom":
+        return option.name;
+    }
+  }
   switch (displayKind) {
     case "allowOnce":
       return "允许";
@@ -605,6 +628,26 @@ function formatBotPermissionOptionDescription(
       : scope === "file"
         ? "Always reject the same file operation"
         : "Always reject the same permission request";
+  }
+  if (locale === "ja-JP") {
+    if (displayKind === "allowOnce") {
+      return "今回だけ許可します";
+    }
+    if (displayKind === "rejectOnce") {
+      return "今回は拒否します";
+    }
+    if (displayKind === "allowAlways") {
+      return scope === "command"
+        ? "同じコマンドは今後確認しません"
+        : scope === "file"
+          ? "同じファイル操作は今後確認しません"
+          : "同じ権限リクエストは今後確認しません";
+    }
+    return scope === "command"
+      ? "同じコマンドは今後も拒否します"
+      : scope === "file"
+        ? "同じファイル操作は今後も拒否します"
+        : "同じ権限リクエストは今後も拒否します";
   }
   if (displayKind === "allowOnce") {
     return "仅允许这一次";
@@ -650,7 +693,8 @@ function formatWorkspaceOptionLabel(workspace: BotWorkspaceRef, locale?: Locale)
   if (!workspace.workspaceIdentity) {
     return workspace.label;
   }
-  const remoteLabel = locale === "en-US" ? "[Remote]" : "[远端]";
+  const remoteLabel =
+    locale === "en-US" ? "[Remote]" : locale === "ja-JP" ? "[リモート]" : "[远端]";
   return `${workspace.label} ${remoteLabel}`;
 }
 
@@ -1318,7 +1362,9 @@ export function createBotsService(
   }
 
   function currentOptionSuffix(locale: Locale | undefined): string {
-    return locale === "en-US" ? "current" : "当前";
+    if (locale === "en-US") return "current";
+    if (locale === "ja-JP") return "現在";
+    return "当前";
   }
 
   function formatReplyGranularityLabel(
@@ -1432,12 +1478,11 @@ export function createBotsService(
     if (!provider) {
       return option.label;
     }
-    const isEnglish = locale === "en-US";
     const labels: Partial<Record<ZCodeProvider, Record<string, string>>> = {
       glm: {
-        default: isEnglish ? "Default" : "默认",
+        default: locale === "en-US" ? "Default" : locale === "ja-JP" ? "デフォルト" : "默认",
         yolo: "Yolo",
-        plan: isEnglish ? "Plan" : "计划",
+        plan: locale === "en-US" ? "Plan" : locale === "ja-JP" ? "プラン" : "计划",
       },
     };
     return labels[provider]?.[option.id] ?? option.label;
@@ -4176,7 +4221,14 @@ export function createBotsService(
         if (replyMessages.length === 0 && !sentAnyAssistantReply) {
           await sendOutbound(
             bot,
-            createOutbound(actor, locale === "en-US" ? "Task completed." : "任务已完成。"),
+            createOutbound(
+              actor,
+              locale === "en-US"
+                ? "Task completed."
+                : locale === "ja-JP"
+                  ? "タスクが完了しました。"
+                  : "任务已完成。",
+            ),
           );
           return;
         }

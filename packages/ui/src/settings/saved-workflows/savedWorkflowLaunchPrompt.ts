@@ -3,8 +3,13 @@
 // 「提升为全局」的文案（buildSavedWorkflowPromotePrompt）例外：它作为 createSession.firstInput
 // **自动发送**，所以是完整的指令而不是开头。
 
-function isZh(locale: string): boolean {
-  return locale.toLowerCase().startsWith("zh");
+type WorkflowPromptLocaleKind = "zh" | "ja" | "en";
+
+function resolveWorkflowPromptLocaleKind(locale: string): WorkflowPromptLocaleKind {
+  const normalized = locale.toLowerCase();
+  if (normalized.startsWith("zh")) return "zh";
+  if (normalized.startsWith("ja")) return "ja";
+  return "en";
 }
 
 /** 「在对话里修订」：只预填、不自动发送——用户接着写要改什么。 */
@@ -17,11 +22,20 @@ export function buildSavedWorkflowRevisePrompt(input: {
   // 全局档修订时追加一句「保持 scope: "global"」，让模型覆盖保存时落回同一档。
   const globalReminderZh =
     input.scope === "global" ? '它是全局工作流，保存时保持 scope: "global"。' : "";
+  const globalReminderJa =
+    input.scope === "global"
+      ? 'これはグローバルワークフローです。保存時は scope: "global" のままにしてください。'
+      : "";
   const globalReminderEn =
     input.scope === "global" ? 'It is a global workflow; keep scope: "global" when saving. ' : "";
-  return isZh(input.locale)
-    ? `请修订已保存的工作流「${input.name}」（${input.path}）：${globalReminderZh}`
-    : `Please revise the saved workflow "${input.name}" (${input.path}): ${globalReminderEn}`;
+  const kind = resolveWorkflowPromptLocaleKind(input.locale);
+  if (kind === "zh") {
+    return `请修订已保存的工作流「${input.name}」（${input.path}）：${globalReminderZh}`;
+  }
+  if (kind === "ja") {
+    return `保存済みのワークフロー「${input.name}」（${input.path}）を修正してください。${globalReminderJa}`;
+  }
+  return `Please revise the saved workflow "${input.name}" (${input.path}): ${globalReminderEn}`;
 }
 
 /** 空态 / 顶栏「通过对话创建」：预填一个开头。 */
@@ -29,14 +43,23 @@ export function buildSavedWorkflowCreatePrompt(
   locale: string,
   scope?: "project" | "global",
 ): string {
+  const kind = resolveWorkflowPromptLocaleKind(locale);
   if (scope === "global") {
-    return isZh(locale)
-      ? '帮我设计一个工作流，跑通后用 SaveWorkflow 保存为全局工作流（scope: "global"）：'
-      : 'Help me design a workflow and save it as a global workflow (scope: "global") with SaveWorkflow once it works: ';
+    if (kind === "zh") {
+      return '帮我设计一个工作流，跑通后用 SaveWorkflow 保存为全局工作流（scope: "global"）：';
+    }
+    if (kind === "ja") {
+      return 'ワークフローの設計を手伝ってください。動作確認できたら SaveWorkflow でグローバルワークフロー（scope: "global"）として保存します。';
+    }
+    return 'Help me design a workflow and save it as a global workflow (scope: "global") with SaveWorkflow once it works: ';
   }
-  return isZh(locale)
-    ? "帮我设计一个工作流，跑通后保存到本项目："
-    : "Help me design a workflow and save it to this project once it works: ";
+  if (kind === "zh") {
+    return "帮我设计一个工作流，跑通后保存到本项目：";
+  }
+  if (kind === "ja") {
+    return "ワークフローの設計を手伝ってください。動作確認できたらこのプロジェクトに保存します。";
+  }
+  return "Help me design a workflow and save it to this project once it works: ";
 }
 
 /**
@@ -51,7 +74,8 @@ export function buildSavedWorkflowPromotePrompt(input: {
   path: string;
   locale: string;
 }): string {
-  if (isZh(input.locale)) {
+  const kind = resolveWorkflowPromptLocaleKind(input.locale);
+  if (kind === "zh") {
     return [
       `请把已保存的项目工作流「${input.name}」（${input.path}）提升为全局工作流。全局工作流对所有项目可见、在任何项目里都能运行，所以它不能依赖本仓库的任何东西。请按下面的步骤做：`,
       "1. 读取这个文件，理解它的因果结构（哪些子代理、什么顺序、什么交接）。",
@@ -60,6 +84,17 @@ export function buildSavedWorkflowPromotePrompt(input: {
       '4. 用 SaveWorkflow 以 scope: "global" 保存。名字可以沿用，也可以取一个更贴切的名字。不要改动原来的项目工作流文件。',
       "5. 最后用几句话总结你概括了什么、哪些点被抽成了参数。",
       "如果这个工作流本质上就绑定在这个项目上、无法有意义地概括，请说明原因并停下，不要保存。",
+    ].join("\n");
+  }
+  if (kind === "ja") {
+    return [
+      `保存済みのプロジェクトワークフロー「${input.name}」（${input.path}）をグローバルワークフローに昇格させてください。グローバルワークフローはすべてのプロジェクトから見え、どのプロジェクトでも実行できる必要があるため、このリポジトリ固有のものに依存してはいけません。次の手順で進めてください。`,
+      "1. このファイルを読み、因果構造（どのサブエージェントが、どの順番で、どう引き継ぐか）を理解します。",
+      "2. このリポジトリを参照している箇所をすべて見つけます。具体的なパス、コマンド、ディレクトリ構成、命名規則、ブランチ名などです。",
+      "3. それらを `args` 宣言（説明と適切な既定値付き）に切り出すか、プロジェクトに依存しない中立的な表現に書き換えます。因果構造は変えません。",
+      '4. SaveWorkflow を使い scope: "global" で保存します。名前はそのままでも、より適切な名前に変えても構いません。元のプロジェクトワークフローのファイルは変更しません。',
+      "5. 最後に、何を一般化したか、どの部分を引数にしたかを数行でまとめます。",
+      "このワークフローが本質的にこのプロジェクトに結び付いていて、意味のある形で一般化できない場合は、理由を説明して保存せずに止まってください。",
     ].join("\n");
   }
   return [

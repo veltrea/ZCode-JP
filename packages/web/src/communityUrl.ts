@@ -5,6 +5,7 @@ import {
   createHelpAppConfigReader,
   resolveHelpAppConfig,
   type Locale,
+  toSiteLocale,
 } from "@zcode/shared";
 import localDefaultAppConfig from "../../../config/default.json" with { type: "json" };
 
@@ -44,5 +45,5 @@ export async function resolveWebCommunityUrl(
   locale: Locale,
   options: ResolveWebCommunityUrlOptions = {},
 ): Promise<string | undefined> {
-  return (await resolveWebHelpConfig(options)).community_urls?.[locale];
+  return (await resolveWebHelpConfig(options)).community_urls?.[toSiteLocale(locale)];
 }

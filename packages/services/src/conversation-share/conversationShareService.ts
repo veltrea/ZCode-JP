@@ -236,6 +236,7 @@ function previewPreflightKey(
 const IMPORTED_SHARE_TITLE_PREFIX: Readonly<Record<Locale, string>> = {
   "zh-CN": "来自分享：",
   "en-US": "From Share: ",
+  "ja-JP": "共有から：",
 };
 
 function formatImportedShareSessionTitle(shareTitle: string, locale: Locale | undefined): string {

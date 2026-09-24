@@ -3,10 +3,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   BUILTIN_MODEL_PROVIDER_IDS,
   CODING_PLAN_SYSTEM_BUSY,
+  DEFAULT_LOCALE,
+  localeFromLanguageTag,
   type CodingPlanBatchPreviewResponse,
   type CodingPlanProductPreviewPayment,
   type CodingPlanStaticProduct,
   type CodingPlanStaticProductsConfig,
+  type Locale,
   type StartPlanPreviewConfig,
   isZaiCodingPlanProviderId,
 } from "@zcode/shared";
@@ -250,12 +253,12 @@ function buildStaticProductsSnapshot(providerId: CodingPlanProviderId): CodingPl
 }
 
 function buildZaiStartStaticProducts(preview: StartPlanPreviewConfig): CodingPlanStaticProduct[] {
-  const isChineseLocale =
-    typeof navigator !== "undefined" && navigator.language.toLowerCase().startsWith("zh");
+  const locale: Locale =
+    typeof navigator !== "undefined" ? localeFromLanguageTag(navigator.language) : DEFAULT_LOCALE;
   const previewName = preview.name.trim() || "Z.ai Start";
   const equityList = preview.entitlements.map((entitlement) => ({
     productEquityTitle: entitlement.showName,
-    productEquityDetails: formatStartPlanPreviewEntitlement(entitlement, isChineseLocale),
+    productEquityDetails: formatStartPlanPreviewEntitlement(entitlement, locale),
   }));
 
   return [
@@ -303,11 +306,9 @@ function buildZaiStartStaticProducts(preview: StartPlanPreviewConfig): CodingPla
 
 function formatStartPlanPreviewEntitlement(
   entitlement: StartPlanPreviewConfig["entitlements"][number],
-  isChineseLocale: boolean,
+  locale: Locale,
 ): string {
-  const amount = new Intl.NumberFormat(isChineseLocale ? "zh-CN" : "en-US").format(
-    entitlement.grantUnits,
-  );
+  const amount = new Intl.NumberFormat(locale).format(entitlement.grantUnits);
   const unit = entitlement.unitType.trim();
   const period = entitlement.period.trim();
   return [amount, unit, period].filter(Boolean).join(" ");

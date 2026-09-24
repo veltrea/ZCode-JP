@@ -1,7 +1,7 @@
 import type { SupportedLocale, UiLocale } from "@zcode/contracts";
 
 export const DEFAULT_LOCALE: SupportedLocale = "en-US";
-export const SUPPORTED_LOCALES = ["en-US", "zh-CN"] as const satisfies readonly SupportedLocale[];
+export const SUPPORTED_LOCALES = ["en-US", "zh-CN", "ja-JP"] as const satisfies readonly SupportedLocale[];
 const LOCALE_ENV_KEYS = ["LC_ALL", "LC_MESSAGES", "LANG", "LANGUAGE"] as const;
 const LANGUAGE_LIST_SEPARATOR = ":";
 const LOCALE_ENCODING_SEPARATOR = ".";
@@ -14,7 +14,7 @@ export interface LocaleDetectionInput {
 }
 
 export function isSupportedLocale(value: string | undefined): value is SupportedLocale {
-  return value === "en-US" || value === "zh-CN";
+  return value === "en-US" || value === "zh-CN" || value === "ja-JP";
 }
 
 export function isUiLocale(value: string | undefined): value is UiLocale {
@@ -45,6 +45,7 @@ function normalizeLocale(value: string | null | undefined): SupportedLocale | un
   const lower = tag.toLowerCase();
   if (lower === "en" || lower.startsWith("en-")) return "en-US";
   if (lower === "zh" || lower.startsWith("zh-")) return "zh-CN";
+  if (lower === "ja" || lower.startsWith("ja-")) return "ja-JP";
   return undefined;
 }
 
