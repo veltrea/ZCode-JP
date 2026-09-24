@@ -575,12 +575,12 @@ function isAbsoluteConfigPath(path: string): boolean {
   return path.startsWith("/") || path.startsWith("\\") || /^[A-Za-z]:[\\/]/.test(path);
 }
 
-/** ZCode-JP：ui.locale に日本語の選択を残すための項目名。公式版の CLI はこの項目を無視する。 */
+/** ui.locale に日本語の選択を残すための項目名。旧版の CLI はこの項目を無視する。 */
 export const UI_JA_LOCALE_KEY = "zcodeJpLocale";
 
 /**
- * ZCode-JP：ファイルには "en-US" と書いてあり、目印の項目に "ja-JP" があれば日本語に戻す。
- * 公式版の CLI で別の言語に変えられていた場合は、その選択を優先する。
+ * ファイルには "en-US" と書いてあり、目印の項目に "ja-JP" があれば日本語に戻す。
+ * 旧版の CLI で別の言語に変えられていた場合は、その選択を優先する。
  */
 function restoreJaUiLocale(root: Record<string, unknown>): void {
   const ui = root.ui;

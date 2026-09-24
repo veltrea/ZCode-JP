@@ -8,7 +8,7 @@
   <a href="https://discord.gg/z9aBcQXZQ3">Discord</a>
 </p>
 <p align="center">
-  简体中文 | <a href="README.md">English</a> | <a href="README.ja.md">日本語</a>
+  简体中文 | <a href="README.en.md">English</a> | <a href="README.md">日本語</a>
 </p>
 
 
