@@ -124,7 +124,7 @@ if (isTrustedCodingPlanBridgeLocation()) {
         getLang() {
           // 注意：executeInMainWorld 的 func 体不经过 TS 编译，不能用 as 断言等 TS 语法。
           const value = (window as unknown as Record<string, unknown>)[langVar];
-          return value === "zh-CN" || value === "en-US" ? value : null;
+          return value === "zh-CN" || value === "en-US" || value === "ja-JP" ? value : null;
         },
         getReportContext() {
           const value = (window as unknown as Record<string, unknown>)[reportContextVar];
@@ -135,10 +135,13 @@ if (isTrustedCodingPlanBridgeLocation()) {
         },
         // 订阅 App locale 运行时变化，返回取消订阅函数。
         // App locale 变化时用 executeJavaScript 派发 zcode-coding-plan-lang-change 事件。
-        onLangChange(callback: (locale: "zh-CN" | "en-US") => void) {
+        onLangChange(callback: (locale: "zh-CN" | "en-US" | "ja-JP") => void) {
           const handler = (event: Event) => {
             const detail = (event as CustomEvent<{ locale?: unknown }>).detail;
-            if (detail && (detail.locale === "zh-CN" || detail.locale === "en-US")) {
+            if (
+              detail &&
+              (detail.locale === "zh-CN" || detail.locale === "en-US" || detail.locale === "ja-JP")
+            ) {
               callback(detail.locale);
             }
           };

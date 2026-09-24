@@ -221,15 +221,18 @@ function buildGitCommitMessageGenerationPrompt(params: {
     .join("\n");
 }
 
-function resolveCommitMessageLanguage(locale?: Locale): "Chinese" | "English" {
+function resolveCommitMessageLanguage(locale?: Locale): "Chinese" | "Japanese" | "English" {
   const candidate = locale ?? readRuntimeLocale();
-  return candidate?.toLowerCase().startsWith("zh") ? "Chinese" : "English";
+  const lower = candidate?.toLowerCase();
+  if (lower?.startsWith("zh")) return "Chinese";
+  if (lower?.startsWith("ja")) return "Japanese";
+  return "English";
 }
 
 function readRuntimeLocale(): string | undefined {
   try {
     // 系统默认语言没有从 UI 显式传入时，服务层只能读取当前运行时的 Intl locale。
-    // 这里仍只接受 zh 为中文，其它未知或读取失败都按英文处理，避免误生成第三种语言。
+    // 这里只识别 zh 为中文、ja 为日文，其它未知或读取失败都按英文处理。
     return Intl.DateTimeFormat().resolvedOptions().locale;
   } catch {
     return undefined;

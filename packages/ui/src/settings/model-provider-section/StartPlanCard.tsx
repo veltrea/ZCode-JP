@@ -196,7 +196,8 @@ function groupEntitlementsByGrantUnits(
 }
 
 function formatModelList(modelNames: string[], locale: string): string {
-  if (locale.toLowerCase().startsWith("zh")) {
+  const normalizedLocale = locale.toLowerCase();
+  if (normalizedLocale.startsWith("zh") || normalizedLocale.startsWith("ja")) {
     return modelNames.join("、");
   }
   if (modelNames.length <= 2) {

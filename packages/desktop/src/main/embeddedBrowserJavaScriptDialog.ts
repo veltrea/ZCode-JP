@@ -66,7 +66,9 @@ function resolveEmbeddedBrowserDialogButtons(
   type: EmbeddedBrowserDialogRequest["type"],
 ): string[] {
   if (type === "alert") return [locale === "zh-CN" ? "确定" : "OK"];
-  return locale === "zh-CN" ? ["取消", "确定"] : ["Cancel", "OK"];
+  if (locale === "zh-CN") return ["取消", "确定"];
+  if (locale === "ja-JP") return ["キャンセル", "OK"];
+  return ["Cancel", "OK"];
 }
 
 /**

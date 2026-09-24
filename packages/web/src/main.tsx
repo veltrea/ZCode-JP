@@ -29,6 +29,7 @@ import {
   resolveConversationShareCodeFromPath,
 } from "./share/conversationShareRoute.js";
 import type { IPlatformService, RemoteTarget, ServerRemoteInfo } from "@zcode/shared";
+import { localeFromLanguageTag, toSiteLocale } from "@zcode/shared";
 import { WEB_DEFAULT_THEME, resolveWebInitialTheme } from "./webThemeSeed.js";
 
 function resolveWebThemePreference(defaultTheme: Theme = WEB_DEFAULT_THEME): Theme {
@@ -116,7 +117,7 @@ function renderWebAuthCallbackPage(): void {
 
 async function renderConversationSharePage(): Promise<void> {
   // 页面语言跟随路径前缀：/cn/share 中文，裸 /share 英文。
-  const routeLocale = resolveConversationShareRouteLocale(window.location.pathname);
+  const routeLocale = toSiteLocale(resolveConversationShareRouteLocale(window.location.pathname));
   // index.html 固定 lang="en"；不同步会让中文分享页对无障碍与浏览器翻译都报错语言。
   document.documentElement.lang = routeLocale;
   // 分享页必须设置 title：否则浏览器标签只显示 index.html 的通用标题。
@@ -242,7 +243,8 @@ function createWebPlatform(): IPlatformService {
       window.open(feedbackUrl, "_blank", "noopener,noreferrer");
     },
     openCommunity: async () => {
-      const locale = document.documentElement.lang === "en-US" ? "en-US" : "zh-CN";
+      const documentLang = document.documentElement.lang;
+      const locale = documentLang === "en-US" || documentLang === "ja-JP" ? documentLang : "zh-CN";
       const communityUrl = await resolveWebCommunityUrl(locale);
       if (!communityUrl) {
         return;
@@ -396,7 +398,13 @@ function WebBootstrapErrorScreen({ message }: { message: string }) {
           <div className="flex items-center gap-3">
             <span className="size-2 rounded-full bg-destructive" />
             <h1 className="text-ui-xs font-medium">
-              {/^zh\b/i.test(navigator.language) ? "Web 启动失败" : "Web bootstrap failed"}
+              {
+                {
+                  "zh-CN": "Web 启动失败",
+                  "en-US": "Web bootstrap failed",
+                  "ja-JP": "Web 版を起動できませんでした",
+                }[localeFromLanguageTag(navigator.language)]
+              }
             </h1>
           </div>
           <p className="mt-2 break-all text-ui-xs/relaxed text-foreground-subtle">{message}</p>
@@ -407,7 +415,11 @@ function WebBootstrapErrorScreen({ message }: { message: string }) {
               window.location.reload();
             }}
           >
-            {/^zh\b/i.test(navigator.language) ? "重试" : "Retry"}
+            {
+              { "zh-CN": "重试", "en-US": "Retry", "ja-JP": "再試行" }[
+                localeFromLanguageTag(navigator.language)
+              ]
+            }
           </button>
         </section>
       </div>

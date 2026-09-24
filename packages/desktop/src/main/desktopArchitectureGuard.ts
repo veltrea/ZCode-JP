@@ -65,8 +65,7 @@ function formatArchitectureMismatchDialogText(
   mismatch: ArchitectureMismatch,
   locale: Locale,
 ): ArchitectureMismatchDialogText {
-  const isZh = locale === "zh-CN";
-  if (isZh) {
+  if (locale === "zh-CN") {
     return {
       title: "架构不匹配",
       message: "当前安装的不是适配本机的版本",
@@ -76,6 +75,19 @@ function formatArchitectureMismatchDialogText(
         `建议前往官网下载并安装 ${mismatch.nativeArch} 原生版本以获得最佳性能。`,
       downloadButton: "前往下载",
       dismissButton: "暂不处理",
+    };
+  }
+
+  if (locale === "ja-JP") {
+    return {
+      title: "アーキテクチャの不一致",
+      message: "インストールされているのはこのパソコンに合ったバージョンではありません",
+      detail:
+        `現在 ${mismatch.binaryArch} 版で動作していますが、このパソコンは ${mismatch.nativeArch}（Apple シリコン）です。` +
+        `システムの変換機能を通して動作しているため、動作が遅く電力も多く使います。\n\n` +
+        `公式サイトから ${mismatch.nativeArch} ネイティブ版をダウンロードしてインストールすると、快適に動作します。`,
+      downloadButton: "ダウンロードする",
+      dismissButton: "あとで",
     };
   }
 

@@ -210,7 +210,7 @@ const loggingSchema = z.object({
 });
 
 const uiSchema = z.object({
-  locale: z.enum(["auto", "en-US", "zh-CN"]).optional(),
+  locale: z.enum(["auto", "en-US", "zh-CN", "ja-JP"]).optional(),
   theme: z.enum(["auto", "dark", "light"]).optional(),
 });
 

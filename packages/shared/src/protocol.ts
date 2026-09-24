@@ -72,7 +72,7 @@ export interface SystemInfo {
 }
 
 /** 支持的语言 */
-export type Locale = "zh-CN" | "en-US";
+export type Locale = "zh-CN" | "en-US" | "ja-JP";
 
 /** 界面语言偏好；system 表示跟随当前运行端系统语言。 */
 export type LocalePreference = "system" | Locale;
@@ -108,6 +108,22 @@ export interface IntegratedTerminalShellOption {
 
 /** 默认语言 */
 export const DEFAULT_LOCALE: Locale = "zh-CN";
+
+/** 把系统语言标签（如 "ja", "zh-Hans-CN", "en-GB"）解析为支持的界面语言。 */
+export function localeFromLanguageTag(tag: string | null | undefined): Locale {
+  const lower = (tag ?? "").toLowerCase();
+  if (lower.startsWith("zh")) return "zh-CN";
+  if (lower.startsWith("ja")) return "ja-JP";
+  return "en-US";
+}
+
+/**
+ * 外部站点（官网、反馈服务、分享站等）只提供中文与英文两种语言。
+ * 日文界面访问这些站点时沿用英文。
+ */
+export function toSiteLocale(locale: Locale): "zh-CN" | "en-US" {
+  return locale === "zh-CN" ? "zh-CN" : "en-US";
+}
 
 // ── Workspace / Tab ──
 

@@ -1314,13 +1314,33 @@ function confirmAppQuit(originWindow?: BrowserWindow | null) {
     return true;
   }
 
-  const isZh = currentApplicationLocale === "zh-CN";
   const runningAgentSessionCount = getRunningAgentSessionCount();
+  const quitConfirmMessages =
+    currentApplicationLocale === "zh-CN"
+      ? {
+          sessionDetail: (count: number) => `正在进行的会话：${count} 个，退出后会被中断。`,
+          buttons: ["退出", "取消"],
+          title: "退出确认",
+          message: "确认退出 Z Code?",
+        }
+      : currentApplicationLocale === "ja-JP"
+        ? {
+            sessionDetail: (count: number) =>
+              `進行中のセッション：${count} 件。終了すると中断されます。`,
+            buttons: ["終了", "キャンセル"],
+            title: "終了の確認",
+            message: "Z Code を終了しますか？",
+          }
+        : {
+            sessionDetail: (count: number) =>
+              `In-progress sessions: ${count}. They will be interrupted after quitting.`,
+            buttons: ["Quit", "Cancel"],
+            title: "Confirm Quit",
+            message: "Quit Z Code?",
+          };
   const detailLines = [
     runningAgentSessionCount > 0
-      ? isZh
-        ? `正在进行的会话：${runningAgentSessionCount} 个，退出后会被中断。`
-        : `In-progress sessions: ${runningAgentSessionCount}. They will be interrupted after quitting.`
+      ? quitConfirmMessages.sessionDetail(runningAgentSessionCount)
       : null,
   ].filter((line): line is string => line !== null);
   const targetWindow =
@@ -1331,11 +1351,11 @@ function confirmAppQuit(originWindow?: BrowserWindow | null) {
         null);
   const dialogOptions = {
     type: "question" as const,
-    buttons: isZh ? ["退出", "取消"] : ["Quit", "Cancel"],
+    buttons: quitConfirmMessages.buttons,
     defaultId: 1,
     cancelId: 1,
-    title: isZh ? "退出确认" : "Confirm Quit",
-    message: isZh ? "确认退出 Z Code?" : "Quit Z Code?",
+    title: quitConfirmMessages.title,
+    message: quitConfirmMessages.message,
     detail: detailLines.join("\n"),
     icon: nativeImage.createFromPath(iconPath),
   };
