@@ -463,6 +463,7 @@ function normalizeConfigFileInput(value: unknown, diagnostics: ConfigDiagnostic[
   if (!isPlainRecord(value)) return value;
 
   const root = { ...value };
+  restoreJaUiLocale(root);
   const mcp = root.mcp;
   if (!isPlainRecord(mcp)) return root;
 
@@ -572,4 +573,21 @@ function isSkillCommandOverrideValue(value: unknown): value is { enable?: boolea
 
 function isAbsoluteConfigPath(path: string): boolean {
   return path.startsWith("/") || path.startsWith("\\") || /^[A-Za-z]:[\\/]/.test(path);
+}
+
+/** ZCode-JP：ui.locale に日本語の選択を残すための項目名。公式版の CLI はこの項目を無視する。 */
+export const UI_JA_LOCALE_KEY = "zcodeJpLocale";
+
+/**
+ * ZCode-JP：ファイルには "en-US" と書いてあり、目印の項目に "ja-JP" があれば日本語に戻す。
+ * 公式版の CLI で別の言語に変えられていた場合は、その選択を優先する。
+ */
+function restoreJaUiLocale(root: Record<string, unknown>): void {
+  const ui = root.ui;
+  if (!isPlainRecord(ui)) return;
+  const { [UI_JA_LOCALE_KEY]: marker, ...rest } = ui;
+  if (marker === "ja-JP" && rest.locale === "en-US") {
+    rest.locale = "ja-JP";
+  }
+  root.ui = rest;
 }

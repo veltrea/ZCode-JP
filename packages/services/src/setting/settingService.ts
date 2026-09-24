@@ -9,6 +9,8 @@ import type {
 import {
   appSettingsPatchSchema,
   appSettingsSchema,
+  decodeJaLocaleFromDisk,
+  encodeJaLocaleForDisk,
   formatLogPrefix,
   formatZodError,
 } from "@zcode/shared";
@@ -144,7 +146,9 @@ async function readSettingsWithMeta(): Promise<ReadSettingsResult> {
         };
       }
     }
-    const result = appSettingsSchema.safeParse(migrateLegacyAccountConnectionSettings(rawValue));
+    const result = appSettingsSchema.safeParse(
+      migrateLegacyAccountConnectionSettings(decodeJaLocaleFromDisk(rawValue)),
+    );
     if (!result.success) {
       log(
         "read failed schema validation, returning defaults. error:",
@@ -211,7 +215,8 @@ async function writeSettings(
   if (!commitAccountSelection && readIncompleteLegacyTeamConnections(raw).length > 0) {
     delete persisted.providerFamilyConnectionSelections;
   }
-  await atomicWriteText(settingsFile, JSON.stringify(persisted, null, 2), {
+  // ZCode-JP：setting.json は公式版と共有するため、"ja-JP" はそのまま書かない（jaLocaleSettings.ts を参照）。
+  await atomicWriteText(settingsFile, JSON.stringify(encodeJaLocaleForDisk(persisted), null, 2), {
     beforeRename: () => {
       if (!shouldCommit()) {
         // 提交前超时的旧写只能清理临时文件，不能晚到 rename 覆盖新语言偏好。

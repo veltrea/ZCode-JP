@@ -18,6 +18,7 @@ import {
   LEGACY_CUA_PLUGIN_ID,
   parseConfigFileToRuntimePatchWithDiagnostics,
   pluginIdAliases,
+  UI_JA_LOCALE_KEY,
   type ConfigDiagnostic,
 } from "./schema.js";
 
@@ -487,13 +488,17 @@ async function readJsonConfigFileOrEmpty(filePath: string): Promise<Record<strin
 
 function patchUiLocale(parsed: Record<string, unknown>, locale: UiLocale): Record<string, unknown> {
   const currentUi = isRecord(parsed.ui) ? parsed.ui : {};
+  // ZCode-JP：この設定ファイルは公式版の CLI と共有する。公式版は ui.locale に "ja-JP" があると
+  // 設定ファイル全体を読めなくなるため、"en-US" を書き、日本語の選択は別の項目に残す。
+  const { [UI_JA_LOCALE_KEY]: _previousJaLocale, ...uiWithoutJaLocale } = currentUi;
+  const ui =
+    locale === "ja-JP"
+      ? { ...uiWithoutJaLocale, locale: "en-US", [UI_JA_LOCALE_KEY]: "ja-JP" }
+      : { ...uiWithoutJaLocale, locale };
 
   return {
     ...parsed,
-    ui: {
-      ...currentUi,
-      locale,
-    },
+    ui,
   };
 }
 

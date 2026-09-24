@@ -306,3 +306,9 @@ export * from "./clientConfig.js";
 export * from "./pluginStoreOrdering.js";
 export * from "./session-debug.js";
 export { redactFeedbackText } from "./feedbackPrivacy.js";
+
+export {
+  JA_LOCALE_SETTINGS_KEY,
+  decodeJaLocaleFromDisk,
+  encodeJaLocaleForDisk,
+} from "./jaLocaleSettings.js";
