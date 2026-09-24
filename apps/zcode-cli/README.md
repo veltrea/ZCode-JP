@@ -1,3 +1,5 @@
+**Read this in other languages:** [日本語](README.ja.md)
+
 # zcode-cli
 
 TypeScript + Node.js 24.14.0 CLI starter. The default artifact is a normal Node CLI bundle, and SEA is kept as an optional packaging path.
